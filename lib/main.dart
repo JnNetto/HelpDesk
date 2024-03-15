@@ -24,9 +24,10 @@ void main() async {
           ),
       '/register': (BuildContext context) => const RegisterPage(),
       '/home': (BuildContext context) => const Home(),
-      '/order': (BuildContext context) => OrderPage(
-            controller: OrdersController(),
-          ),
+      '/order': (BuildContext context) => ChangeNotifierProvider(
+            create: (context) => OrdersController(),
+            child: OrderPage(),
+          )
     },
   ));
 }

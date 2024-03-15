@@ -12,7 +12,6 @@ class LoginController extends ChangeNotifier {
   TextEditingController emailController = TextEditingController();
   TextEditingController senhaController = TextEditingController();
   bool _isLoading = false;
-  GlobalKey<State> modalBarrierKey = GlobalKey<State>();
   bool get isLoading => _isLoading;
 
   Future<void> efetuaLogin({

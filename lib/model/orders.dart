@@ -20,7 +20,7 @@ class Orders {
       titulo: data['titulo'] ?? '',
       descricao: data['descricao'] ?? '',
       autor: data['autor'] ?? '',
-      dataDoChamado: data['dataDoChamado'] ?? '',
+      dataDoChamado: data['dataDoChamado'],
       status: data['status'] ?? false,
     );
   }

@@ -20,11 +20,11 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Consumer<LoginController>(
       builder: (BuildContext context, LoginController value, Widget? child) {
-        final LoginController _loginController =
+        final LoginController loginController =
             Provider.of<LoginController>(context);
 
         void efetuaLogin() async {
-          await _loginController.efetuaLogin(
+          await loginController.efetuaLogin(
             context: context,
           );
         }
@@ -41,6 +41,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 backgroundColor: AppCollors.primaryColor,
                 centerTitle: true,
+                automaticallyImplyLeading: false,
               ),
               body: SingleChildScrollView(
                 child: SizedBox(
@@ -72,7 +73,7 @@ class _LoginPageState extends State<LoginPage> {
                         color: AppCollors.backgroundCard,
                         margin: const EdgeInsets.symmetric(horizontal: 20),
                         child: TextField(
-                          controller: _loginController.emailController,
+                          controller: loginController.emailController,
                           keyboardType: TextInputType.emailAddress,
                           decoration: InputDecoration(
                               hintText: "Email",
@@ -93,7 +94,7 @@ class _LoginPageState extends State<LoginPage> {
                         color: AppCollors.backgroundCard,
                         margin: const EdgeInsets.symmetric(horizontal: 20),
                         child: TextField(
-                          controller: _loginController.senhaController,
+                          controller: loginController.senhaController,
                           obscureText: obscureText,
                           decoration: InputDecoration(
                             hintText: "Senha",
@@ -199,7 +200,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
             ),
-            if (_loginController.isLoading)
+            if (loginController.isLoading)
               Stack(
                 children: [
                   Container(
