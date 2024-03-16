@@ -1,9 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class NewOrders {
   String? _id;
   String? _titulo;
   String? _descricao;
   String? _autor;
-  String? _dataDoChamado;
+  Timestamp? _dataDoChamado;
   bool? _status;
   String? get id => this._id;
 

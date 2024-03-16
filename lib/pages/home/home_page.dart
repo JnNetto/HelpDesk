@@ -145,13 +145,17 @@ class _HomeState extends State<Home> {
               height: 50,
               margin: const EdgeInsets.symmetric(horizontal: 30),
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.pushNamed(context, "/specificOrders");
+                },
                 style: ElevatedButton.styleFrom(
                     backgroundColor: AppCollors.primaryColor,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5))),
-                child: const Text(
-                  "Meus pedidos",
+                child: Text(
+                  GeneralData.currentUser?.position == 'helper'
+                      ? "Pedidos aceitos"
+                      : "Meus pedidos",
                   style: TextStyle(fontSize: 20, color: Colors.white),
                 ),
               ),

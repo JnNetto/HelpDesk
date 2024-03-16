@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
@@ -75,9 +77,7 @@ class _OrderPageState extends State<OrderPage> {
                                 controller.tituloController.text,
                                 controller.descriptionController.text,
                                 GeneralData.currentUser?.name ?? '',
-                                DateTime.now()
-                                    .toUtc()
-                                    .subtract(const Duration(hours: 3)),
+                                Timestamp.now(),
                                 false,
                                 context);
                           });
@@ -165,19 +165,23 @@ class _OrderPageState extends State<OrderPage> {
                           const SizedBox(
                             height: 10,
                           ),
-                          Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              color: AppCollors.primaryColor,
+                          Visibility(
+                            visible:
+                                GeneralData.currentUser?.position == 'cliente',
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                color: AppCollors.primaryColor,
+                              ),
+                              child: IconButton(
+                                  onPressed: () {
+                                    exibirModal(context, ordersController);
+                                  },
+                                  icon: const Icon(
+                                    Icons.phone_callback_rounded,
+                                    color: Colors.white,
+                                  )),
                             ),
-                            child: IconButton(
-                                onPressed: () {
-                                  exibirModal(context, ordersController);
-                                },
-                                icon: const Icon(
-                                  Icons.phone_callback_rounded,
-                                  color: Colors.white,
-                                )),
                           ),
                         ],
                       ),
@@ -247,7 +251,8 @@ class _OrderPageState extends State<OrderPage> {
                       child: ListView.builder(
                           itemCount: listOrders?.length,
                           itemBuilder: (context, index) {
-                            return buildOrder(listOrders![index], context);
+                            return ordersController.buildOrder(
+                                listOrders![index], context);
                           }),
                     )),
                   ],
@@ -274,40 +279,4 @@ class _OrderPageState extends State<OrderPage> {
       );
     });
   }
-}
-
-Widget buildOrder(Orders obj, BuildContext context) {
-  return Container(
-    width: 340,
-    height: 100,
-    margin: const EdgeInsets.only(bottom: 15),
-    decoration: BoxDecoration(
-        color: const Color(0XFFF0F2F5),
-        border: Border(
-            left: BorderSide(
-                width: 4,
-                color: obj.status ?? false ? Colors.blue : Colors.red))),
-    child: ListTile(
-      onTap: () {
-        exibirDetalhes(obj, context);
-      },
-      contentPadding: const EdgeInsets.all(15),
-      title: Text(
-        "${obj.titulo} - ${obj.autor}",
-        style: GoogleFonts.poppins(
-            textStyle: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppCollors.textColorBlue)),
-      ),
-      subtitle: Text(
-        obj.dataDoChamado.toString(),
-        style: GoogleFonts.poppins(
-            textStyle: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: AppCollors.textDescriptionCard)),
-      ),
-    ),
-  );
 }

@@ -5,7 +5,10 @@ class OrdersRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<List<Orders>?> getAllOrders() async {
-    QuerySnapshot querySnapshot = await _firestore.collection('Pedidos').get();
+    QuerySnapshot querySnapshot = await _firestore
+        .collection("Pedidos")
+        .orderBy("dataDoChamado", descending: true)
+        .get();
 
     if (querySnapshot.docs.isNotEmpty) {
       List<Orders> listOrders = [];

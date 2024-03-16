@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:help_desk/controllers/register_controller.dart';
+import 'package:help_desk/pages/specific_orders/specific_orders_page.dart';
 import 'package:provider/provider.dart';
 import 'controllers/login_controller.dart';
 import 'controllers/orders_controller.dart';
@@ -22,12 +24,19 @@ void main() async {
             create: (context) => LoginController(),
             child: LoginPage(),
           ),
-      '/register': (BuildContext context) => const RegisterPage(),
+      '/register': (BuildContext context) => ChangeNotifierProvider(
+            create: (context) => RegisterController(),
+            child: RegisterPage(),
+          ),
       '/home': (BuildContext context) => const Home(),
       '/order': (BuildContext context) => ChangeNotifierProvider(
             create: (context) => OrdersController(),
             child: OrderPage(),
-          )
+          ),
+      '/specificOrders': (BuildContext context) => ChangeNotifierProvider(
+            create: (context) => OrdersController(),
+            child: SpecificOrdersPage(),
+          ),
     },
   ));
 }

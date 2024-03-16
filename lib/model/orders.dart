@@ -1,9 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Orders {
   String? id;
   String? titulo;
   String? descricao;
   String? autor;
-  String? dataDoChamado;
+  Timestamp? dataDoChamado;
   bool? status;
 
   Orders(
@@ -20,7 +22,7 @@ class Orders {
       titulo: data['titulo'] ?? '',
       descricao: data['descricao'] ?? '',
       autor: data['autor'] ?? '',
-      dataDoChamado: data['dataDoChamado'],
+      dataDoChamado: data['dataDoChamado'] ?? Timestamp.now(),
       status: data['status'] ?? false,
     );
   }
