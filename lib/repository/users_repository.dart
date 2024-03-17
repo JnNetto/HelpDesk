@@ -11,7 +11,8 @@ class UsersRepository {
         .get();
 
     if (querySnapshot.docs.isNotEmpty) {
-      return Users.fromFirestore(querySnapshot.docs.first);
+      return Users.fromFirestore(
+          querySnapshot.docs.first, querySnapshot.docs.first.id);
     } else {
       return null;
     }

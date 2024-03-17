@@ -2,8 +2,7 @@ class NewUser {
   String? _nome;
   String? _email;
   String? _senha;
-
-  NewUser();
+  List? listOrders;
 
   get nome => _nome;
 
@@ -16,4 +15,10 @@ class NewUser {
   get senha => _senha;
 
   set senha(value) => _senha = value;
+
+  get getListOrders => listOrders;
+
+  set setListOrders(listOrders) => this.listOrders = listOrders;
+
+  NewUser();
 }

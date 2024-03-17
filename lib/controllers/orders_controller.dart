@@ -14,7 +14,7 @@ class OrdersController extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  void addOrder(String titulo, String description, String autor,
+  void addOrder(String id, String titulo, String description, String autor,
       Timestamp dataDoChamado, bool status, BuildContext context) async {
     _isLoading = true;
     notifyListeners();
@@ -35,6 +35,24 @@ class OrdersController extends ChangeNotifier {
         "autor": order.autor,
         "dataDoChamado": order.dataDoChamado,
         "status": order.status
+      });
+
+      List<dynamic>? list = GeneralData.currentUser?.listOrders;
+
+      list?.add({
+        "id": id,
+        "titulo": order.titulo,
+        "descricao": order.descricao,
+        "autor": order.autor,
+        "dataDoChamado": order.dataDoChamado,
+        "status": order.status
+      });
+
+      await db.collection('Usuários').doc(id).set({
+        'email': GeneralData.currentUser?.email,
+        'listaPedidos': list,
+        'nome': GeneralData.currentUser?.name,
+        'ocupacao': GeneralData.currentUser?.position,
       });
 
       final OrdersRepository ordersRepository = OrdersRepository();
@@ -100,7 +118,7 @@ class OrdersController extends ChangeNotifier {
                 height: 10,
               ),
               Text(
-                obj.descricao ?? '',
+                obj.id ?? '',
                 style: GoogleFonts.poppins(
                     textStyle: TextStyle(
                         fontSize: 12, color: AppCollors.textColorBlue)),

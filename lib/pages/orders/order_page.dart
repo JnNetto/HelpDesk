@@ -74,6 +74,7 @@ class _OrderPageState extends State<OrderPage> {
                         onPressed: () {
                           setState(() {
                             controller.addOrder(
+                                GeneralData.currentUser?.id ?? '',
                                 controller.tituloController.text,
                                 controller.descriptionController.text,
                                 GeneralData.currentUser?.name ?? '',

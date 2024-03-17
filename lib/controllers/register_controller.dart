@@ -58,11 +58,19 @@ class RegisterController extends ChangeNotifier {
       FirebaseFirestore db = FirebaseFirestore.instance;
 
       if (isHelper) {
-        await db.collection('Usuários').add(
-            {"nome": user.nome, "email": user.email, "ocupacao": "helper"});
+        await db.collection('Usuários').add({
+          "nome": user.nome,
+          "email": user.email,
+          "ocupacao": "helper",
+          'listaPedidos': []
+        });
       } else {
-        await db.collection('Usuários').add(
-            {"nome": user.nome, "email": user.email, "ocupacao": "cliente"});
+        await db.collection('Usuários').add({
+          "nome": user.nome,
+          "email": user.email,
+          "ocupacao": "cliente",
+          'listaPedidos': []
+        });
       }
 
       _isLoading = false;

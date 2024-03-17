@@ -16,6 +16,22 @@ class Orders {
       this.dataDoChamado,
       this.status});
 
+  List<Orders> mapToOrdersList(List<dynamic>? mapList) {
+    List<Orders> ordersList = [];
+    for (var map in mapList!) {
+      Orders order = Orders(
+        id: map['id'],
+        titulo: map['titulo'],
+        descricao: map['descricao'],
+        autor: map['autor'],
+        dataDoChamado: map['dataDoChamado'],
+        status: map['status'],
+      );
+      ordersList.add(order);
+    }
+    return ordersList;
+  }
+
   factory Orders.fromFirestore(var data, var id) {
     return Orders(
       id: id ?? '',

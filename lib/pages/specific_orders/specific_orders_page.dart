@@ -18,7 +18,11 @@ class _SpecificOrdersPageState extends State<SpecificOrdersPage> {
   @override
   Widget build(BuildContext context) {
     String? nome = GeneralData.currentUser?.name;
-    List<Orders>? listOrders = GeneralData.currentorders;
+    Orders order = Orders();
+    print(GeneralData.currentUser?.listOrders.toString());
+    List<Orders>? listOrders =
+        order.mapToOrdersList(GeneralData.currentUser?.listOrders);
+
     return Consumer<OrdersController>(
         builder: (BuildContext context, OrdersController value, Widget? child) {
       OrdersController ordersController =
@@ -84,10 +88,10 @@ class _SpecificOrdersPageState extends State<SpecificOrdersPage> {
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
                 child: ListView.builder(
-                    itemCount: listOrders?.length,
+                    itemCount: listOrders.length,
                     itemBuilder: (context, index) {
                       return ordersController.buildOrder(
-                          listOrders![index], context);
+                          listOrders[index], context);
                     }),
               ),
             ),

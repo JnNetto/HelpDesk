@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'orders.dart';
+
 class NewOrders {
   String? _id;
   String? _titulo;
@@ -7,7 +9,17 @@ class NewOrders {
   String? _autor;
   Timestamp? _dataDoChamado;
   bool? _status;
+
   String? get id => this._id;
+
+  List<Orders?> toListOrders(List<dynamic>? list) {
+    List<Orders> listOrders = [];
+    for (dynamic item in list!) {
+      Orders order = Orders.fromFirestore(item, item['id']);
+      listOrders.add(order);
+    }
+    return listOrders;
+  }
 
   set id(String? value) => this._id = value;
 
