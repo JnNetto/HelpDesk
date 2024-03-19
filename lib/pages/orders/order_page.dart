@@ -253,7 +253,11 @@ class _OrderPageState extends State<OrderPage> {
                           itemCount: listOrders?.length,
                           itemBuilder: (context, index) {
                             return ordersController.buildOrder(
-                                listOrders![index], context);
+                                listOrders![index],
+                                index,
+                                context,
+                                ordersController,
+                                false);
                           }),
                     )),
                   ],

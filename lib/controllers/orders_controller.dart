@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:help_desk/exceptions/failure.dart';
+import 'package:help_desk/util/detalhes_orders.dart';
 
 import '../model/new_orders.dart';
 import '../model/orders.dart';
@@ -13,6 +15,7 @@ class OrdersController extends ChangeNotifier {
   TextEditingController descriptionController = TextEditingController();
   bool _isLoading = false;
   bool get isLoading => _isLoading;
+  set isLoading(value) => _isLoading = value;
 
   void addOrder(String id, String titulo, String description, String autor,
       Timestamp dataDoChamado, bool status, BuildContext context) async {
@@ -29,7 +32,7 @@ class OrdersController extends ChangeNotifier {
 
       FirebaseFirestore db = FirebaseFirestore.instance;
 
-      await db.collection('Pedidos').add({
+      DocumentReference docRef = await db.collection('Pedidos').add({
         "titulo": order.titulo,
         "descricao": order.descricao,
         "autor": order.autor,
@@ -38,15 +41,24 @@ class OrdersController extends ChangeNotifier {
       });
 
       List<dynamic>? list = GeneralData.currentUser?.listOrders;
+      String newId = docRef.id;
 
       list?.add({
-        "id": id,
+        'id': newId,
         "titulo": order.titulo,
         "descricao": order.descricao,
         "autor": order.autor,
         "dataDoChamado": order.dataDoChamado,
         "status": order.status
       });
+
+      GeneralData.currentorders?.add(Orders(
+          id: newId,
+          titulo: order.titulo,
+          descricao: order.descricao,
+          autor: order.autor,
+          dataDoChamado: order.dataDoChamado,
+          status: order.status));
 
       await db.collection('Usuários').doc(id).set({
         'email': GeneralData.currentUser?.email,
@@ -72,6 +84,41 @@ class OrdersController extends ChangeNotifier {
     // });
   }
 
+  void deleteSpecificOrder(
+      int index, OrdersController controller, BuildContext context) async {
+    try {
+      isLoading = true;
+      notifyListeners();
+      List<dynamic>? list = GeneralData.currentorders;
+      Orders order = list?[index];
+      print(order.toString());
+
+      FirebaseFirestore db = FirebaseFirestore.instance;
+
+      QuerySnapshot querySnapshot = await db.collection('Pedidos').get();
+      for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+        var data = doc.data() as dynamic;
+        if (data['titulo'] == order.titulo &&
+            data['descricao'] == order.descricao &&
+            data['autor'] == order.autor &&
+            data['dataDoChamado'] == order.dataDoChamado &&
+            data['status'] == order.status) {
+          print("achou");
+          String docId = doc.id;
+          await db.collection('Pedidos').doc(docId).delete();
+          break; // Sai do loop após excluir o documento
+        }
+      }
+
+      isLoading = false;
+      notifyListeners();
+    } on FirebaseException catch (e) {
+      isLoading = false;
+      notifyListeners();
+      Failure.showErrorDialog(context, e);
+    }
+  }
+
   String dataFormatada(DateTime data) {
     DateTime dataDoChamado = data.toUtc().subtract(Duration(hours: 3));
     String formattedDate =
@@ -81,64 +128,24 @@ class OrdersController extends ChangeNotifier {
     return '$formattedDate às $formattedTime';
   }
 
-  void exibirDetalhes(Orders obj, BuildContext context) {
+  void exibirDetalhes(Orders obj, int index, BuildContext context,
+      OrdersController controller, bool specific) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Center(
-              child: Text(
-            obj.titulo ?? '',
-            style: GoogleFonts.poppins(
-                textStyle: TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                    color: AppCollors.textColorBlue)),
-          )),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                "Nome: ${obj.autor}",
-                style: GoogleFonts.poppins(
-                    textStyle: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppCollors.textColorBlue)),
-              ),
-              Text(
-                "Data: ${dataFormatada(obj.dataDoChamado?.toDate() ?? DateTime.now())}",
-                style: GoogleFonts.poppins(
-                    textStyle: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppCollors.textColorBlue)),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              Text(
-                obj.id ?? '',
-                style: GoogleFonts.poppins(
-                    textStyle: TextStyle(
-                        fontSize: 12, color: AppCollors.textColorBlue)),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Voltar'),
-            ),
-          ],
-        );
+        if (!specific) {
+          return DetailOrders.alertDialogOrders(
+              obj, index, context, controller);
+        } else {
+          return DetailOrders.alertDialogSpecificOrders(
+              obj, index, context, controller);
+        }
       },
     );
   }
 
-  Widget buildOrder(Orders obj, BuildContext context) {
+  Widget buildOrder(Orders obj, int index, BuildContext context,
+      OrdersController controller, bool specific) {
     return Container(
       width: 340,
       height: 100,
@@ -151,7 +158,7 @@ class OrdersController extends ChangeNotifier {
                   color: obj.status ?? false ? Colors.blue : Colors.red))),
       child: ListTile(
         onTap: () {
-          exibirDetalhes(obj, context);
+          exibirDetalhes(obj, index, context, controller, specific);
         },
         contentPadding: const EdgeInsets.all(15),
         title: Text(

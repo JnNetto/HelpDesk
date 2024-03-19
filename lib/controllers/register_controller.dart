@@ -62,6 +62,7 @@ class RegisterController extends ChangeNotifier {
           "nome": user.nome,
           "email": user.email,
           "ocupacao": "helper",
+          'pedidosAceitos': [],
           'listaPedidos': []
         });
       } else {

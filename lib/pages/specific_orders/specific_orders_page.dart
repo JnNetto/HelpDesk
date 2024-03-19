@@ -19,8 +19,11 @@ class _SpecificOrdersPageState extends State<SpecificOrdersPage> {
   Widget build(BuildContext context) {
     String? nome = GeneralData.currentUser?.name;
     Orders order = Orders();
+    List<Orders>? listOrders = GeneralData.currentorders
+        ?.where((order) => order.autor == GeneralData.currentUser?.name)
+        .toList();
     print(GeneralData.currentUser?.listOrders.toString());
-    List<Orders>? listOrders =
+    List<Orders>? listSpecificOrders =
         order.mapToOrdersList(GeneralData.currentUser?.listOrders);
 
     return Consumer<OrdersController>(
@@ -88,10 +91,21 @@ class _SpecificOrdersPageState extends State<SpecificOrdersPage> {
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
                 child: ListView.builder(
-                    itemCount: listOrders.length,
+                    itemCount: GeneralData.currentUser?.position == 'helper'
+                        ? listSpecificOrders.length
+                        : listOrders?.length,
                     itemBuilder: (context, index) {
-                      return ordersController.buildOrder(
-                          listOrders[index], context);
+                      if (GeneralData.currentUser?.position == 'helper') {
+                        return ordersController.buildOrder(
+                            listSpecificOrders[index],
+                            index,
+                            context,
+                            ordersController,
+                            true);
+                      } else {
+                        return ordersController.buildOrder(listOrders![index],
+                            index, context, ordersController, true);
+                      }
                     }),
               ),
             ),
