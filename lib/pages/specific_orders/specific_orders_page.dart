@@ -22,14 +22,14 @@ class _SpecificOrdersPageState extends State<SpecificOrdersPage> {
     List<Orders>? listOrders = GeneralData.currentorders
         ?.where((order) => order.autor == GeneralData.currentUser?.name)
         .toList();
-    print(GeneralData.currentUser?.listOrders.toString());
     List<Orders>? listSpecificOrders =
-        order.mapToOrdersList(GeneralData.currentUser?.listOrders);
+        order.mapToOrdersList(GeneralData.currentUser?.ordersAccepted);
 
     return Consumer<OrdersController>(
         builder: (BuildContext context, OrdersController value, Widget? child) {
       OrdersController ordersController =
           Provider.of<OrdersController>(context);
+
       return Stack(
         children: [
           Scaffold(

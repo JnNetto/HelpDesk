@@ -13,8 +13,7 @@ class OrdersRepository {
     if (querySnapshot.docs.isNotEmpty) {
       List<Orders> listOrders = [];
       for (var docSnapshot in querySnapshot.docs) {
-        listOrders
-            .add(Orders.fromFirestore(docSnapshot.data(), docSnapshot.id));
+        listOrders.add(Orders.fromFirestore(docSnapshot.data()));
       }
       return listOrders;
     } else {

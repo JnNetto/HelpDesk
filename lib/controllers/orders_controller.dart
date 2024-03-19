@@ -2,7 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:help_desk/exceptions/failure.dart';
-import 'package:help_desk/util/detalhes_orders.dart';
+import 'package:help_desk/util/detail_orders.dart';
+import 'package:help_desk/util/detail_specific_orders.dart';
 
 import '../model/new_orders.dart';
 import '../model/orders.dart';
@@ -43,6 +44,15 @@ class OrdersController extends ChangeNotifier {
       List<dynamic>? list = GeneralData.currentUser?.listOrders;
       String newId = docRef.id;
 
+      await db.collection('Pedidos').doc(newId).set({
+        'id': newId,
+        "titulo": order.titulo,
+        "descricao": order.descricao,
+        "autor": order.autor,
+        "dataDoChamado": order.dataDoChamado,
+        "status": order.status
+      });
+
       list?.add({
         'id': newId,
         "titulo": order.titulo,
@@ -76,7 +86,7 @@ class OrdersController extends ChangeNotifier {
     } on FirebaseException catch (e) {
       _isLoading = false;
       notifyListeners();
-      print(e.toString());
+      Failure.showErrorDialog(context, e);
     }
 
     // .catchError((erro) {
@@ -84,31 +94,21 @@ class OrdersController extends ChangeNotifier {
     // });
   }
 
-  void deleteSpecificOrder(
-      int index, OrdersController controller, BuildContext context) async {
+  void deleteSpecificOrder(int index, BuildContext context) async {
     try {
       isLoading = true;
       notifyListeners();
-      List<dynamic>? list = GeneralData.currentorders;
-      Orders order = list?[index];
-      print(order.toString());
+      List<Orders>? list = GeneralData.currentorders;
+      var item = list?[index];
 
       FirebaseFirestore db = FirebaseFirestore.instance;
+      await db.collection('Pedidos').doc(item?.id).delete();
 
-      QuerySnapshot querySnapshot = await db.collection('Pedidos').get();
-      for (QueryDocumentSnapshot doc in querySnapshot.docs) {
-        var data = doc.data() as dynamic;
-        if (data['titulo'] == order.titulo &&
-            data['descricao'] == order.descricao &&
-            data['autor'] == order.autor &&
-            data['dataDoChamado'] == order.dataDoChamado &&
-            data['status'] == order.status) {
-          print("achou");
-          String docId = doc.id;
-          await db.collection('Pedidos').doc(docId).delete();
-          break; // Sai do loop após excluir o documento
-        }
-      }
+      GeneralData.currentorders?.removeAt(index);
+
+      final OrdersRepository ordersRepository = OrdersRepository();
+      List<Orders>? listOrders = (await ordersRepository.getAllOrders());
+      GeneralData.currentorders = listOrders;
 
       isLoading = false;
       notifyListeners();
@@ -134,11 +134,14 @@ class OrdersController extends ChangeNotifier {
       context: context,
       builder: (BuildContext context) {
         if (!specific) {
-          return DetailOrders.alertDialogOrders(
-              obj, index, context, controller);
+          return DetailOrders(obj: obj, index: index, controller: controller);
         } else {
-          return DetailOrders.alertDialogSpecificOrders(
-              obj, index, context, controller);
+          return DetailSpecificOrders(
+            obj: obj,
+            index: index,
+            controller: controller,
+            context: context,
+          );
         }
       },
     );
