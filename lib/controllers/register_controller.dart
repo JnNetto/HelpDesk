@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -14,23 +16,12 @@ class RegisterController extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   void validadarDados(String nome, String email, String senha) {
-    String msgErro = '';
-
     if (nome.isNotEmpty || email.isNotEmpty || senha.isNotEmpty) {
       if (email.contains("@") && email.contains(".com")) {
         if (senha.length > 8 || !senha.contains(" ")) {
-        } else {
-          msgErro = "Senha precisa ter no mínimo 8 caracteres sem espaçamentos";
-          print(msgErro);
-        }
-      } else {
-        msgErro = "Endereço de email tem estrutura incorreta";
-        print(msgErro);
-      }
-    } else {
-      msgErro = "Há campos vazios";
-      print(msgErro);
-    }
+        } else {}
+      } else {}
+    } else {}
   }
 
   void cadastrarUsuario(BuildContext context) async {
@@ -82,7 +73,6 @@ class RegisterController extends ChangeNotifier {
     } on FirebaseAuthException catch (e) {
       _isLoading = false;
       notifyListeners();
-      // ignore: use_build_context_synchronously
       Failure.showErrorDialog(context, e);
     }
   }

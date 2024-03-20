@@ -23,7 +23,7 @@ class _HomeState extends State<Home> {
         ),
         backgroundColor: AppCollors.primaryColor,
         centerTitle: true,
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       drawer: Drawer(
         child: Column(
@@ -45,8 +45,8 @@ class _HomeState extends State<Home> {
                       Text(
                         GeneralData.currentUser?.name ?? '',
                         style: GoogleFonts.poppins(
-                            textStyle:
-                                TextStyle(fontSize: 30, color: Colors.white)),
+                            textStyle: const TextStyle(
+                                fontSize: 30, color: Colors.white)),
                       ),
                     ],
                   ),
@@ -54,28 +54,62 @@ class _HomeState extends State<Home> {
             Expanded(
                 flex: 13,
                 child: Container(
-                  padding: EdgeInsets.only(right: 120, top: 20),
+                  margin: const EdgeInsets.only(top: 20),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Text("E-mail utilizado: ",
                           style: GoogleFonts.poppins(
-                            textStyle: TextStyle(
+                            textStyle: const TextStyle(
                                 fontSize: 15, fontWeight: FontWeight.bold),
                           )),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 10),
-                        child: Text(GeneralData.currentUser?.email ?? '',
-                            style: GoogleFonts.poppins(
-                              textStyle: TextStyle(fontSize: 15),
-                            )),
+                      Text(GeneralData.currentUser?.email ?? '',
+                          style: GoogleFonts.poppins(
+                            textStyle: const TextStyle(fontSize: 15),
+                          )),
+                      const SizedBox(
+                        height: 20,
                       ),
-                      SizedBox(
-                        height: 400,
+                      Text("Função: ",
+                          style: GoogleFonts.poppins(
+                            textStyle: const TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.bold),
+                          )),
+                      Text(
+                          GeneralData.currentUser?.position?.toUpperCase() ??
+                              '',
+                          style: GoogleFonts.poppins(
+                            textStyle: const TextStyle(fontSize: 15),
+                          )),
+                      const SizedBox(
+                        height: 350,
                       ),
                       TextButton(
                           onPressed: () {
-                            Navigator.pushNamed(context, "/login");
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('Confirmar Logout'),
+                                  content: const Text(
+                                      'Tem certeza que deseja sair da conta?'),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Cancelar'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                        Navigator.pushNamed(context, "/login");
+                                      },
+                                      child: const Text('Confirmar'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
                           },
                           child: Text("Encerrar sessão",
                               style: GoogleFonts.poppins(
@@ -90,11 +124,11 @@ class _HomeState extends State<Home> {
         ),
       ),
       body: Container(
-        margin: EdgeInsets.only(top: 30),
+        margin: const EdgeInsets.only(top: 30),
         child: Column(
           children: [
             lottieAnimation(),
-            SizedBox(
+            const SizedBox(
               height: 40,
             ),
             Text(
@@ -105,7 +139,7 @@ class _HomeState extends State<Home> {
                       color: AppCollors.textColorBlue,
                       fontWeight: FontWeight.w600)),
             ),
-            SizedBox(
+            const SizedBox(
               height: 20,
             ),
             Text(
@@ -116,7 +150,7 @@ class _HomeState extends State<Home> {
                 color: AppCollors.textColorBlue,
               )),
             ),
-            SizedBox(
+            const SizedBox(
               height: 30,
             ),
             Container(
@@ -137,7 +171,7 @@ class _HomeState extends State<Home> {
                 ),
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 30,
             ),
             Container(
@@ -156,7 +190,7 @@ class _HomeState extends State<Home> {
                   GeneralData.currentUser?.position == 'helper'
                       ? "Pedidos aceitos"
                       : "Meus pedidos",
-                  style: TextStyle(fontSize: 20, color: Colors.white),
+                  style: const TextStyle(fontSize: 20, color: Colors.white),
                 ),
               ),
             ),

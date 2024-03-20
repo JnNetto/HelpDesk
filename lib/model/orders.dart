@@ -19,14 +19,14 @@ class Orders {
   List<Orders> mapToOrdersList(List<dynamic>? mapList) {
     List<Orders> ordersList = [];
     if (mapList != null) {
-      for (var map in mapList!) {
+      for (var item in mapList) {
         Orders order = Orders(
-          id: map['id'],
-          titulo: map['titulo'],
-          descricao: map['descricao'],
-          autor: map['autor'],
-          dataDoChamado: map['dataDoChamado'],
-          status: map['status'],
+          id: item['id'],
+          titulo: item['titulo'],
+          descricao: item['descricao'],
+          autor: item['autor'],
+          dataDoChamado: item['dataDoChamado'],
+          status: item['status'],
         );
         ordersList.add(order);
       }

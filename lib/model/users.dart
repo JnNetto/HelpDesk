@@ -18,7 +18,6 @@ class Users {
 
   factory Users.fromFirestore(DocumentSnapshot doc, var id) {
     Map data = doc.data() as Map;
-    print(data.toString());
     if (data['ocupacao'] == 'helper') {
       return Users(
         id: id ?? '',

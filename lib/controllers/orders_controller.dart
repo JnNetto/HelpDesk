@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -70,11 +72,8 @@ class OrdersController extends ChangeNotifier {
           dataDoChamado: order.dataDoChamado,
           status: order.status));
 
-      await db.collection('Usuários').doc(id).set({
-        'email': GeneralData.currentUser?.email,
+      await db.collection('Usuários').doc(id).update({
         'listaPedidos': list,
-        'nome': GeneralData.currentUser?.name,
-        'ocupacao': GeneralData.currentUser?.position,
       });
 
       final OrdersRepository ordersRepository = OrdersRepository();
@@ -96,8 +95,6 @@ class OrdersController extends ChangeNotifier {
 
   void deleteSpecificOrder(int index, BuildContext context) async {
     try {
-      isLoading = true;
-      notifyListeners();
       List<Orders>? list = GeneralData.currentorders;
       var item = list?[index];
 
@@ -107,8 +104,57 @@ class OrdersController extends ChangeNotifier {
       GeneralData.currentorders?.removeAt(index);
 
       final OrdersRepository ordersRepository = OrdersRepository();
+      ordersRepository.deleteAlredyDeletedOrders(item, context);
+
       List<Orders>? listOrders = (await ordersRepository.getAllOrders());
       GeneralData.currentorders = listOrders;
+    } on FirebaseException catch (e) {
+      Failure.showErrorDialog(context, e);
+    }
+  }
+
+  void acceptOrder(BuildContext context, int index) async {
+    try {
+      isLoading = true;
+      notifyListeners();
+
+      List<Orders>? listTemp = GeneralData.currentorders;
+      Orders? item = listTemp?[index];
+
+      List<dynamic>? acceptedOrders = GeneralData.currentUser?.ordersAccepted;
+      acceptedOrders?.add({
+        'id': item?.id,
+        "titulo": item?.titulo,
+        "descricao": item?.descricao,
+        "autor": item?.autor,
+        "dataDoChamado": item?.dataDoChamado,
+        "status": true
+      });
+
+      List<dynamic>? listOrders = GeneralData.currentUser?.listOrders;
+      listOrders?.add({
+        'id': item?.id,
+        "titulo": item?.titulo,
+        "descricao": item?.descricao,
+        "autor": item?.autor,
+        "dataDoChamado": item?.dataDoChamado,
+        "status": true
+      });
+
+      List<Orders>? allOrders = GeneralData.currentorders;
+      if (allOrders != null) {
+        for (Orders itemTemp in allOrders) {
+          if (itemTemp.id == item?.id) {
+            item?.status = true;
+          }
+        }
+      }
+      String id = GeneralData.currentUser?.id ?? '';
+
+      FirebaseFirestore db = FirebaseFirestore.instance;
+      await db.collection('Pedidos').doc(item?.id).update({'status': true});
+      await db.collection('Usuários').doc(id).update(
+          {'listaPedidos': listOrders, 'pedidosAceitos': acceptedOrders});
 
       isLoading = false;
       notifyListeners();
@@ -119,8 +165,54 @@ class OrdersController extends ChangeNotifier {
     }
   }
 
+  void disacceptOrder(BuildContext context, int index) async {
+    try {
+      List<Orders>? listTemp = GeneralData.currentorders;
+      Orders? item = listTemp?[index];
+
+      List<dynamic>? acceptedOrders = GeneralData.currentUser?.ordersAccepted;
+      if (acceptedOrders != null) {
+        for (Map itemTemp in acceptedOrders) {
+          if (itemTemp['id'] == item?.id) {
+            acceptedOrders.remove(itemTemp);
+            break;
+          }
+        }
+      }
+
+      GeneralData.currentUser?.ordersAccepted?.remove({
+        'id': item?.id,
+        "titulo": item?.titulo,
+        "descricao": item?.descricao,
+        "autor": item?.autor,
+        "dataDoChamado": item?.dataDoChamado,
+        "status": true
+      });
+
+      if (listTemp != null) {
+        for (Orders itemTemp in listTemp) {
+          if (itemTemp.id == item?.id) {
+            itemTemp.status = false;
+            break;
+          }
+        }
+      }
+
+      String id = GeneralData.currentUser?.id ?? '';
+
+      FirebaseFirestore db = FirebaseFirestore.instance;
+      await db.collection('Pedidos').doc(item?.id).update({'status': false});
+      await db
+          .collection('Usuários')
+          .doc(id)
+          .update({'pedidosAceitos': acceptedOrders});
+    } on FirebaseException catch (e) {
+      Failure.showErrorDialog(context, e);
+    }
+  }
+
   String dataFormatada(DateTime data) {
-    DateTime dataDoChamado = data.toUtc().subtract(Duration(hours: 3));
+    DateTime dataDoChamado = data.toUtc().subtract(const Duration(hours: 3));
     String formattedDate =
         '${dataDoChamado.day.toString().padLeft(2, '0')}/${dataDoChamado.month.toString().padLeft(2, '0')}/${dataDoChamado.year}';
     String formattedTime =

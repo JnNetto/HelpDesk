@@ -19,6 +19,7 @@ class DetailOrders extends StatefulWidget {
   });
 
   @override
+  // ignore: library_private_types_in_public_api
   _DetailOrdersState createState() => _DetailOrdersState();
 }
 
@@ -81,7 +82,10 @@ class _DetailOrdersState extends State<DetailOrders> {
             Visibility(
               visible: GeneralData.currentUser?.position == 'helper',
               child: TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  widget.controller.acceptOrder(context, widget.index);
+                  Navigator.pop(context);
+                },
                 child: const Text('Aceitar pedido'),
               ),
             ),

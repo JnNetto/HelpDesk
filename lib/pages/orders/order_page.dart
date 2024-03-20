@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
@@ -10,7 +9,7 @@ import '../../util/AppCollors.dart';
 import '../../util/dados_gerais.dart';
 
 class OrderPage extends StatefulWidget {
-  OrderPage({super.key});
+  const OrderPage({super.key});
 
   @override
   State<OrderPage> createState() => _OrderPageState();
@@ -62,7 +61,8 @@ class _OrderPageState extends State<OrderPage> {
                       maxLines: 5,
                       controller: controller.descriptionController,
                       decoration: InputDecoration(
-                          hintText: "Descrição",
+                          hintText:
+                              "Descrição | Descreva com precisão sobre o seu problema e o local que você se encontra",
                           hintStyle: TextStyle(color: AppCollors.textColorBlue),
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8))),

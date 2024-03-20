@@ -22,20 +22,20 @@ void main() async {
     routes: {
       '/login': (BuildContext context) => ChangeNotifierProvider(
             create: (context) => LoginController(),
-            child: LoginPage(),
+            child: const LoginPage(),
           ),
       '/register': (BuildContext context) => ChangeNotifierProvider(
             create: (context) => RegisterController(),
-            child: RegisterPage(),
+            child: const RegisterPage(),
           ),
       '/home': (BuildContext context) => const Home(),
       '/order': (BuildContext context) => ChangeNotifierProvider(
             create: (context) => OrdersController(),
-            child: OrderPage(),
+            child: const OrderPage(),
           ),
       '/specificOrders': (BuildContext context) => ChangeNotifierProvider(
             create: (context) => OrdersController(),
-            child: SpecificOrdersPage(),
+            child: const SpecificOrdersPage(),
           ),
     },
   ));

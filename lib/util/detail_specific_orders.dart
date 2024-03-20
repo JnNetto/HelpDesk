@@ -12,6 +12,7 @@ class DetailSpecificOrders extends StatefulWidget {
   final BuildContext context;
 
   const DetailSpecificOrders({
+    super.key,
     required this.obj,
     required this.index,
     required this.controller,
@@ -19,6 +20,7 @@ class DetailSpecificOrders extends StatefulWidget {
   });
 
   @override
+  // ignore: library_private_types_in_public_api
   _DetailSpecificOrdersState createState() => _DetailSpecificOrdersState();
 }
 
@@ -104,28 +106,35 @@ class _DetailSpecificOrdersState extends State<DetailSpecificOrders> {
 
 void showDeleteConfirmationDialog(
     BuildContext context, OrdersController controller, int index) {
-  showDialog<bool>(
+  showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text('Confirmar Exclusão'),
-        content: Text('Tem certeza que deseja apagar este pedido?'),
+        title: const Text('Confirmar Exclusão'),
+        content: const Text('Tem certeza que deseja apagar este pedido?'),
         actions: <Widget>[
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
               Navigator.of(context).pop();
             },
-            child: Text('Cancelar'),
+            child: const Text('Cancelar'),
           ),
           TextButton(
             onPressed: () {
-              controller.deleteSpecificOrder(index, context);
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
+              if (GeneralData.currentUser?.position == 'helper') {
+                controller.disacceptOrder(context, index);
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+              } else {
+                controller.deleteSpecificOrder(index, context);
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+              }
             },
-            child: Text('Confirmar'),
+            child: const Text('Confirmar'),
           ),
         ],
       );

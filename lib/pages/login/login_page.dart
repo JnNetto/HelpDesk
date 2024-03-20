@@ -7,7 +7,7 @@ import '../../controllers/login_controller.dart';
 import '../../util/AppCollors.dart';
 
 class LoginPage extends StatefulWidget {
-  LoginPage({super.key});
+  const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();

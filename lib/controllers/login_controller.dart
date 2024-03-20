@@ -58,6 +58,7 @@ class LoginController extends ChangeNotifier {
     } on FirebaseAuthException catch (e) {
       _isLoading = false;
       notifyListeners();
+      // ignore: use_build_context_synchronously
       Failure.showErrorDialog(context, e);
     }
   }

@@ -8,29 +8,29 @@ class NewOrders {
   Timestamp? _dataDoChamado;
   bool? _status;
 
-  String? get id => this._id;
+  get id => _id;
 
-  set id(String? value) => this._id = value;
+  set id(value) => _id = value;
 
-  get titulo => this._titulo;
+  get titulo => _titulo;
 
-  set titulo(value) => this._titulo = value;
+  set titulo(value) => _titulo = value;
 
-  get descricao => this._descricao;
+  get descricao => _descricao;
 
-  set descricao(value) => this._descricao = value;
+  set descricao(value) => _descricao = value;
 
-  get autor => this._autor;
+  get autor => _autor;
 
-  set autor(value) => this._autor = value;
+  set autor(value) => _autor = value;
 
-  get dataDoChamado => this._dataDoChamado;
+  get dataDoChamado => _dataDoChamado;
 
-  set dataDoChamado(value) => this._dataDoChamado = value;
+  set dataDoChamado(value) => _dataDoChamado = value;
 
-  get status => this._status;
+  get status => _status;
 
-  set status(value) => this._status = value;
+  set status(value) => _status = value;
 
   NewOrders();
 }
