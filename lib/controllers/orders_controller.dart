@@ -141,9 +141,8 @@ class OrdersController extends ChangeNotifier {
         "status": true
       });
 
-      List<Orders>? allOrders = GeneralData.currentorders;
-      if (allOrders != null) {
-        for (Orders itemTemp in allOrders) {
+      if (listTemp != null) {
+        for (Orders itemTemp in listTemp) {
           if (itemTemp.id == item?.id) {
             item?.status = true;
           }

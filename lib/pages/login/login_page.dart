@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../controllers/login_controller.dart';
 import '../../util/AppCollors.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  const LoginPage({Key? key}) : super(key: key);
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -15,20 +16,32 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   bool obscureText = true;
+  late LoginController loginController;
+
+  @override
+  void initState() {
+    super.initState();
+    loginController = Provider.of<LoginController>(context, listen: false);
+    checkSavedCredentials();
+  }
+
+  Future<void> checkSavedCredentials() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final List<String>? emailAndPasswordList = prefs.getStringList('list');
+
+    if (emailAndPasswordList != null && emailAndPasswordList.isNotEmpty) {
+      final String email = emailAndPasswordList[0];
+      final String password = emailAndPasswordList[1];
+      loginController.emailController.text = email;
+      loginController.senhaController.text = password;
+      await loginController.efetuaLogin(context: context);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<LoginController>(
       builder: (BuildContext context, LoginController value, Widget? child) {
-        final LoginController loginController =
-            Provider.of<LoginController>(context);
-
-        void efetuaLogin() async {
-          await loginController.efetuaLogin(
-            context: context,
-          );
-        }
-
         return Stack(
           children: [
             Scaffold(
@@ -181,7 +194,11 @@ class _LoginPageState extends State<LoginPage> {
                         height: 50,
                         margin: const EdgeInsets.symmetric(horizontal: 20),
                         child: ElevatedButton(
-                          onPressed: efetuaLogin,
+                          onPressed: () async {
+                            await loginController.efetuaLogin(
+                              context: context,
+                            );
+                          },
                           style: ElevatedButton.styleFrom(
                               backgroundColor: AppCollors.primaryColor,
                               shape: RoundedRectangleBorder(

@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../exceptions/failure.dart';
 import '../model/orders.dart';
@@ -39,6 +40,7 @@ class LoginController extends ChangeNotifier {
           content: Text("Login efetuado com sucesso!!"),
           duration: Duration(seconds: 5),
         );
+        saveEmailAndPassword([emailController.text, senhaController.text]);
         // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
         // ignore: use_build_context_synchronously
@@ -61,5 +63,10 @@ class LoginController extends ChangeNotifier {
       // ignore: use_build_context_synchronously
       Failure.showErrorDialog(context, e);
     }
+  }
+
+  Future<void> saveEmailAndPassword(List<String> emailAndPassword) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('list', emailAndPassword);
   }
 }
