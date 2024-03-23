@@ -5,6 +5,7 @@ class Orders {
   String? titulo;
   String? descricao;
   String? autor;
+  String? helperQueAceitou;
   Timestamp? dataDoChamado;
   bool? status;
 
@@ -13,6 +14,7 @@ class Orders {
       this.titulo,
       this.descricao,
       this.autor,
+      this.helperQueAceitou,
       this.dataDoChamado,
       this.status});
 
@@ -25,6 +27,7 @@ class Orders {
           titulo: item['titulo'],
           descricao: item['descricao'],
           autor: item['autor'],
+          helperQueAceitou: item['helperQueAceitou'] ?? '',
           dataDoChamado: item['dataDoChamado'],
           status: item['status'],
         );
@@ -42,6 +45,7 @@ class Orders {
       titulo: data['titulo'] ?? '',
       descricao: data['descricao'] ?? '',
       autor: data['autor'] ?? '',
+      helperQueAceitou: data['helperQueAceitou'] ?? '',
       dataDoChamado: data['dataDoChamado'] ?? Timestamp.now(),
       status: data['status'] ?? false,
     );

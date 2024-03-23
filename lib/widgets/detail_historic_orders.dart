@@ -2,29 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:help_desk/controllers/orders_controller.dart';
 import 'package:help_desk/util/AppCollors.dart';
-import 'package:help_desk/util/dados_gerais.dart';
+
 import '../model/orders.dart';
 
-class DetailSpecificOrders extends StatefulWidget {
+class DetailHistoricOrders extends StatefulWidget {
   final Orders obj;
   final int index;
   final OrdersController controller;
-  final BuildContext context;
 
-  const DetailSpecificOrders({
+  const DetailHistoricOrders({
     super.key,
     required this.obj,
     required this.index,
     required this.controller,
-    required this.context,
   });
 
   @override
   // ignore: library_private_types_in_public_api
-  _DetailSpecificOrdersState createState() => _DetailSpecificOrdersState();
+  _DetailHistoricOrdersState createState() => _DetailHistoricOrdersState();
 }
 
-class _DetailSpecificOrdersState extends State<DetailSpecificOrders> {
+class _DetailHistoricOrdersState extends State<DetailHistoricOrders> {
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -55,6 +53,19 @@ class _DetailSpecificOrdersState extends State<DetailSpecificOrders> {
                   ),
                 ),
               ),
+              Visibility(
+                visible: widget.obj.helperQueAceitou != '',
+                child: Text(
+                  "Helper: ${widget.obj.helperQueAceitou}",
+                  style: GoogleFonts.poppins(
+                    textStyle: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppCollors.textColorBlue,
+                    ),
+                  ),
+                ),
+              ),
               Text(
                 "Data: ${widget.controller.dataFormatada(widget.obj.dataDoChamado?.toDate() ?? DateTime.now())}",
                 style: GoogleFonts.poppins(
@@ -79,65 +90,8 @@ class _DetailSpecificOrdersState extends State<DetailSpecificOrders> {
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                showDeleteConfirmationDialog(
-                    context, widget.controller, widget.index);
-              },
-              child: Text(
-                GeneralData.currentUser?.position == 'helper'
-                    ? 'Cancelar ajuda'
-                    : 'Retirar pedido',
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Voltar'),
-            ),
-          ],
         ),
       ),
     );
   }
-}
-
-void showDeleteConfirmationDialog(
-    BuildContext context, OrdersController controller, int index) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Confirmar Exclusão'),
-        content: const Text('Tem certeza que deseja apagar este pedido?'),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-            },
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () {
-              if (GeneralData.currentUser?.position == 'helper') {
-                controller.disacceptOrder(context, index);
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
-              } else {
-                controller.deleteSpecificOrder(index, context);
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
-              }
-            },
-            child: const Text('Confirmar'),
-          ),
-        ],
-      );
-    },
-  );
 }

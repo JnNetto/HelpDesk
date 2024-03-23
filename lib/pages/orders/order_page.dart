@@ -176,6 +176,7 @@ class _OrderPageState extends State<OrderPage> {
                               ),
                               child: IconButton(
                                   onPressed: () {
+                                    ordersController.updatePage(context);
                                     exibirModal(context, ordersController);
                                   },
                                   icon: const Icon(
@@ -208,22 +209,22 @@ class _OrderPageState extends State<OrderPage> {
                       height: 5,
                     ),
                     Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 60),
+                      margin: const EdgeInsets.symmetric(horizontal: 30),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           Container(
                             width: 124,
                             height: 30,
-                            padding: const EdgeInsets.symmetric(vertical: 2.2),
+                            padding: const EdgeInsets.symmetric(vertical: 3.5),
                             decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(8),
                                 color: AppCollors.primaryColor),
                             child: const Text(
-                              "Finalizados",
+                              "Em andamento",
                               textAlign: TextAlign.center,
                               style:
-                                  TextStyle(color: Colors.white, fontSize: 18),
+                                  TextStyle(color: Colors.white, fontSize: 15),
                             ),
                           ),
                           Container(
@@ -239,6 +240,22 @@ class _OrderPageState extends State<OrderPage> {
                               style:
                                   TextStyle(color: Colors.white, fontSize: 18),
                             ),
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: AppCollors.primaryColor,
+                            ),
+                            child: IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    ordersController.updatePage(context);
+                                  });
+                                },
+                                icon: const Icon(
+                                  Icons.update_rounded,
+                                  color: Colors.white,
+                                )),
                           ),
                         ],
                       ),

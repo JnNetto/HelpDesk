@@ -84,7 +84,32 @@ class _HomeState extends State<Home> {
                               textStyle: const TextStyle(fontSize: 15),
                             )),
                         const SizedBox(
-                          height: 350,
+                          height: 20,
+                        ),
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 30),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, "/historicOrders");
+                            },
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: AppCollors.primaryColor,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5))),
+                            child: Center(
+                              child: Text(
+                                GeneralData.currentUser?.position == 'helper'
+                                    ? "Histórico de pedidos aceitos"
+                                    : "Histórico de pedidos",
+                                style: const TextStyle(
+                                    fontSize: 20, color: Colors.white),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 200,
                         ),
                         TextButton(
                             onPressed: () {
@@ -108,9 +133,12 @@ class _HomeState extends State<Home> {
                                               await SharedPreferences
                                                   .getInstance();
                                           await prefs.remove('list');
+                                          // ignore: use_build_context_synchronously
                                           Navigator.of(context).pop();
                                           Navigator.pushNamed(
-                                              context, "/login");
+                                              // ignore: use_build_context_synchronously
+                                              context,
+                                              "/login");
                                         },
                                         child: const Text('Confirmar'),
                                       ),

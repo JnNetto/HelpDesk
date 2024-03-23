@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:help_desk/controllers/register_controller.dart';
+import 'package:help_desk/pages/historic_orders/historic_orders.dart';
 import 'package:help_desk/pages/specific_orders/specific_orders_page.dart';
 import 'package:provider/provider.dart';
 import 'controllers/login_controller.dart';
@@ -36,6 +37,10 @@ void main() async {
       '/specificOrders': (BuildContext context) => ChangeNotifierProvider(
             create: (context) => OrdersController(),
             child: const SpecificOrdersPage(),
+          ),
+      '/historicOrders': (BuildContext context) => ChangeNotifierProvider(
+            create: (context) => OrdersController(),
+            child: const HistoricOrdersPage(),
           ),
     },
   ));

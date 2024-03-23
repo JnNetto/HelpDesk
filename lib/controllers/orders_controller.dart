@@ -1,17 +1,21 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:help_desk/exceptions/failure.dart';
-import 'package:help_desk/util/detail_orders.dart';
-import 'package:help_desk/util/detail_specific_orders.dart';
+import 'package:help_desk/widgets/detail_orders.dart';
+import 'package:help_desk/widgets/detail_specific_orders.dart';
 
 import '../model/new_orders.dart';
 import '../model/orders.dart';
+import '../model/users.dart';
 import '../repository/orders_repository.dart';
+import '../repository/users_repository.dart';
 import '../util/AppCollors.dart';
 import '../util/dados_gerais.dart';
+import '../widgets/detail_historic_orders.dart';
 
 class OrdersController extends ChangeNotifier {
   TextEditingController tituloController = TextEditingController();
@@ -114,53 +118,60 @@ class OrdersController extends ChangeNotifier {
   }
 
   void acceptOrder(BuildContext context, int index) async {
-    try {
-      isLoading = true;
-      notifyListeners();
+    List<Orders>? listTemp = GeneralData.currentorders;
+    Orders? item = listTemp?[index];
 
-      List<Orders>? listTemp = GeneralData.currentorders;
-      Orders? item = listTemp?[index];
+    if (item?.status == true) {
+      Failure.showErrorDialog(context, 'Esse pedido já foi aceito');
+    } else {
+      try {
+        isLoading = true;
+        notifyListeners();
 
-      List<dynamic>? acceptedOrders = GeneralData.currentUser?.ordersAccepted;
-      acceptedOrders?.add({
-        'id': item?.id,
-        "titulo": item?.titulo,
-        "descricao": item?.descricao,
-        "autor": item?.autor,
-        "dataDoChamado": item?.dataDoChamado,
-        "status": true
-      });
+        List<dynamic>? acceptedOrders = GeneralData.currentUser?.ordersAccepted;
+        acceptedOrders?.add({
+          'id': item?.id,
+          "titulo": item?.titulo,
+          "descricao": item?.descricao,
+          "autor": item?.autor,
+          "dataDoChamado": item?.dataDoChamado,
+          "status": true
+        });
 
-      List<dynamic>? listOrders = GeneralData.currentUser?.listOrders;
-      listOrders?.add({
-        'id': item?.id,
-        "titulo": item?.titulo,
-        "descricao": item?.descricao,
-        "autor": item?.autor,
-        "dataDoChamado": item?.dataDoChamado,
-        "status": true
-      });
+        List<dynamic>? listOrders = GeneralData.currentUser?.listOrders;
+        listOrders?.add({
+          'id': item?.id,
+          "titulo": item?.titulo,
+          "descricao": item?.descricao,
+          "autor": item?.autor,
+          "dataDoChamado": item?.dataDoChamado,
+          "status": true
+        });
 
-      if (listTemp != null) {
-        for (Orders itemTemp in listTemp) {
-          if (itemTemp.id == item?.id) {
-            item?.status = true;
+        if (listTemp != null) {
+          for (Orders itemTemp in listTemp) {
+            if (itemTemp.id == item?.id) {
+              item?.status = true;
+            }
           }
         }
+        String id = GeneralData.currentUser?.id ?? '';
+
+        FirebaseFirestore db = FirebaseFirestore.instance;
+        await db.collection('Pedidos').doc(item?.id).update({
+          'status': true,
+          'helperQueAceitou': GeneralData.currentUser?.name
+        });
+        await db.collection('Usuários').doc(id).update(
+            {'listaPedidos': listOrders, 'pedidosAceitos': acceptedOrders});
+
+        isLoading = false;
+        notifyListeners();
+      } on FirebaseException catch (e) {
+        isLoading = false;
+        notifyListeners();
+        Failure.showErrorDialog(context, e);
       }
-      String id = GeneralData.currentUser?.id ?? '';
-
-      FirebaseFirestore db = FirebaseFirestore.instance;
-      await db.collection('Pedidos').doc(item?.id).update({'status': true});
-      await db.collection('Usuários').doc(id).update(
-          {'listaPedidos': listOrders, 'pedidosAceitos': acceptedOrders});
-
-      isLoading = false;
-      notifyListeners();
-    } on FirebaseException catch (e) {
-      isLoading = false;
-      notifyListeners();
-      Failure.showErrorDialog(context, e);
     }
   }
 
@@ -184,6 +195,7 @@ class OrdersController extends ChangeNotifier {
         "titulo": item?.titulo,
         "descricao": item?.descricao,
         "autor": item?.autor,
+        'helperQueAceitou': item?.helperQueAceitou,
         "dataDoChamado": item?.dataDoChamado,
         "status": true
       });
@@ -191,6 +203,7 @@ class OrdersController extends ChangeNotifier {
       if (listTemp != null) {
         for (Orders itemTemp in listTemp) {
           if (itemTemp.id == item?.id) {
+            itemTemp.helperQueAceitou = '';
             itemTemp.status = false;
             break;
           }
@@ -200,12 +213,36 @@ class OrdersController extends ChangeNotifier {
       String id = GeneralData.currentUser?.id ?? '';
 
       FirebaseFirestore db = FirebaseFirestore.instance;
-      await db.collection('Pedidos').doc(item?.id).update({'status': false});
+      await db
+          .collection('Pedidos')
+          .doc(item?.id)
+          .update({'status': false, 'helperQueAceitou': ''});
       await db
           .collection('Usuários')
           .doc(id)
           .update({'pedidosAceitos': acceptedOrders});
     } on FirebaseException catch (e) {
+      Failure.showErrorDialog(context, e);
+    }
+  }
+
+  void updatePage(BuildContext context) async {
+    try {
+      isLoading = true;
+      notifyListeners();
+      final UsersRepository userRepository = UsersRepository();
+      final OrdersRepository ordersRepository = OrdersRepository();
+      Users? user = (await userRepository
+          .getUserByEmail(GeneralData.currentUser?.email ?? ''));
+
+      List<Orders>? listOrders = (await ordersRepository.getAllOrders());
+      GeneralData.currentUser = user;
+      GeneralData.currentorders = listOrders;
+      isLoading = false;
+      notifyListeners();
+    } on FirebaseException catch (e) {
+      isLoading = false;
+      notifyListeners();
       Failure.showErrorDialog(context, e);
     }
   }
@@ -220,26 +257,31 @@ class OrdersController extends ChangeNotifier {
   }
 
   void exibirDetalhes(Orders obj, int index, BuildContext context,
-      OrdersController controller, bool specific) {
+      OrdersController controller, bool? specific) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        if (!specific) {
-          return DetailOrders(obj: obj, index: index, controller: controller);
+        if (specific != null) {
+          if (!specific) {
+            return DetailOrders(obj: obj, index: index, controller: controller);
+          } else {
+            return DetailSpecificOrders(
+              obj: obj,
+              index: index,
+              controller: controller,
+              context: context,
+            );
+          }
         } else {
-          return DetailSpecificOrders(
-            obj: obj,
-            index: index,
-            controller: controller,
-            context: context,
-          );
+          return DetailHistoricOrders(
+              obj: obj, index: index, controller: controller);
         }
       },
     );
   }
 
   Widget buildOrder(Orders obj, int index, BuildContext context,
-      OrdersController controller, bool specific) {
+      OrdersController controller, bool? specific) {
     return Container(
       width: 340,
       height: 100,
@@ -252,6 +294,7 @@ class OrdersController extends ChangeNotifier {
                   color: obj.status ?? false ? Colors.blue : Colors.red))),
       child: ListTile(
         onTap: () {
+          updatePage(context);
           exibirDetalhes(obj, index, context, controller, specific);
         },
         contentPadding: const EdgeInsets.all(15),
