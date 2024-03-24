@@ -1,21 +1,20 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:help_desk/exceptions/failure.dart';
-import 'package:help_desk/widgets/detail_orders.dart';
-import 'package:help_desk/widgets/detail_specific_orders.dart';
 
 import '../model/new_orders.dart';
 import '../model/orders.dart';
-import '../model/users.dart';
 import '../repository/orders_repository.dart';
-import '../repository/users_repository.dart';
 import '../util/AppCollors.dart';
 import '../util/dados_gerais.dart';
 import '../widgets/detail_historic_orders.dart';
+import '../widgets/detail_orders.dart';
+import '../widgets/detail_specific_orders.dart';
 
 class OrdersController extends ChangeNotifier {
   TextEditingController tituloController = TextEditingController();
@@ -23,6 +22,8 @@ class OrdersController extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
   set isLoading(value) => _isLoading = value;
+
+  StreamSubscription<List<Orders>>? _ordersSubscription;
 
   void addOrder(String id, String titulo, String description, String autor,
       Timestamp dataDoChamado, bool status, BuildContext context) async {
@@ -68,181 +69,151 @@ class OrdersController extends ChangeNotifier {
         "status": order.status
       });
 
-      GeneralData.currentorders?.add(Orders(
-          id: newId,
-          titulo: order.titulo,
-          descricao: order.descricao,
-          autor: order.autor,
-          dataDoChamado: order.dataDoChamado,
-          status: order.status));
-
       await db.collection('Usuários').doc(id).update({
         'listaPedidos': list,
       });
 
       final OrdersRepository ordersRepository = OrdersRepository();
-      List<Orders>? listOrders = (await ordersRepository.getAllOrders());
-      GeneralData.currentorders = listOrders;
+      Stream<List<Orders>> listOrders = ordersRepository.getAllOrdersStream();
 
-      _isLoading = false;
-      notifyListeners();
+      _ordersSubscription?.cancel();
+      _ordersSubscription = listOrders.listen((orders) {
+        Stream<List<Orders>> ordersStream = Stream.value(orders);
+        GeneralData.currentorders = ordersStream;
+        _isLoading = false;
+        notifyListeners();
+      });
     } on FirebaseException catch (e) {
       _isLoading = false;
       notifyListeners();
       Failure.showErrorDialog(context, e);
     }
-
-    // .catchError((erro) {
-    //   print("Aconteceu o erro: " + erro.toString());
-    // });
   }
 
   void deleteSpecificOrder(int index, BuildContext context) async {
     try {
-      List<Orders>? list = GeneralData.currentorders;
-      var item = list?[index];
+      // Obtém os pedidos atuais do stream
+      List<Orders>? list = await GeneralData.currentorders?.first;
 
-      FirebaseFirestore db = FirebaseFirestore.instance;
-      await db.collection('Pedidos').doc(item?.id).delete();
+      if (list != null && list.isNotEmpty && index < list.length) {
+        var item = list[index];
 
-      GeneralData.currentorders?.removeAt(index);
+        FirebaseFirestore db = FirebaseFirestore.instance;
+        await db.collection('Pedidos').doc(item.id).delete();
 
-      final OrdersRepository ordersRepository = OrdersRepository();
-      ordersRepository.deleteAlredyDeletedOrders(item, context);
+        // Remove o pedido da lista local
+        list.removeAt(index);
 
-      List<Orders>? listOrders = (await ordersRepository.getAllOrders());
-      GeneralData.currentorders = listOrders;
+        // Atualiza o stream com a nova lista de pedidos
+        GeneralData.currentorders = Stream.value(list);
+
+        // Chama a função para deletar o pedido de documentos relacionados
+        final OrdersRepository ordersRepository = OrdersRepository();
+        await ordersRepository.deleteAlredyDeletedOrders(item, context);
+      }
     } on FirebaseException catch (e) {
       Failure.showErrorDialog(context, e);
     }
   }
 
   void acceptOrder(BuildContext context, int index) async {
-    List<Orders>? listTemp = GeneralData.currentorders;
-    Orders? item = listTemp?[index];
+    try {
+      // Obtém os pedidos atuais do stream
+      List<Orders>? listTemp = await GeneralData.currentorders?.first;
 
-    if (item?.status == true) {
-      Failure.showErrorDialog(context, 'Esse pedido já foi aceito');
-    } else {
-      try {
-        isLoading = true;
-        notifyListeners();
+      if (listTemp != null && index < listTemp.length) {
+        Orders? item = listTemp[index];
 
-        List<dynamic>? acceptedOrders = GeneralData.currentUser?.ordersAccepted;
-        acceptedOrders?.add({
-          'id': item?.id,
-          "titulo": item?.titulo,
-          "descricao": item?.descricao,
-          "autor": item?.autor,
-          "dataDoChamado": item?.dataDoChamado,
-          "status": true
-        });
+        if (item.status == true) {
+          Failure.showErrorDialog(context, 'Esse pedido já foi aceito');
+        } else {
+          isLoading = true;
+          notifyListeners();
 
-        List<dynamic>? listOrders = GeneralData.currentUser?.listOrders;
-        listOrders?.add({
-          'id': item?.id,
-          "titulo": item?.titulo,
-          "descricao": item?.descricao,
-          "autor": item?.autor,
-          "dataDoChamado": item?.dataDoChamado,
-          "status": true
-        });
+          List<dynamic>? acceptedOrders =
+              GeneralData.currentUser?.ordersAccepted;
+          acceptedOrders?.add({
+            'id': item.id,
+            "titulo": item.titulo,
+            "descricao": item.descricao,
+            "autor": item.autor,
+            "dataDoChamado": item.dataDoChamado,
+            "status": true
+          });
 
-        if (listTemp != null) {
-          for (Orders itemTemp in listTemp) {
-            if (itemTemp.id == item?.id) {
-              item?.status = true;
-            }
-          }
+          List<dynamic>? listOrders = GeneralData.currentUser?.listOrders;
+          listOrders?.add({
+            'id': item.id,
+            "titulo": item.titulo,
+            "descricao": item.descricao,
+            "autor": item.autor,
+            "dataDoChamado": item.dataDoChamado,
+            "status": true
+          });
+
+          // Atualiza o status do pedido para true
+          item.status = true;
+
+          String id = GeneralData.currentUser?.id ?? '';
+
+          FirebaseFirestore db = FirebaseFirestore.instance;
+          await db.collection('Pedidos').doc(item.id).update({
+            'status': true,
+            'helperQueAceitou': GeneralData.currentUser?.name
+          });
+          await db.collection('Usuários').doc(id).update(
+              {'listaPedidos': listOrders, 'pedidosAceitos': acceptedOrders});
+
+          isLoading = false;
+          notifyListeners();
         }
-        String id = GeneralData.currentUser?.id ?? '';
-
-        FirebaseFirestore db = FirebaseFirestore.instance;
-        await db.collection('Pedidos').doc(item?.id).update({
-          'status': true,
-          'helperQueAceitou': GeneralData.currentUser?.name
-        });
-        await db.collection('Usuários').doc(id).update(
-            {'listaPedidos': listOrders, 'pedidosAceitos': acceptedOrders});
-
-        isLoading = false;
-        notifyListeners();
-      } on FirebaseException catch (e) {
-        isLoading = false;
-        notifyListeners();
-        Failure.showErrorDialog(context, e);
+      } else {
+        Failure.showErrorDialog(context, 'Erro ao aceitar o pedido');
       }
+    } on FirebaseException catch (e) {
+      isLoading = false;
+      notifyListeners();
+      Failure.showErrorDialog(context, e);
     }
   }
 
   void disacceptOrder(BuildContext context, int index) async {
     try {
-      List<Orders>? listTemp = GeneralData.currentorders;
-      Orders? item = listTemp?[index];
+      // Obtém os pedidos atuais do stream
+      List<Orders>? listTemp = await GeneralData.currentorders?.first;
 
-      List<dynamic>? acceptedOrders = GeneralData.currentUser?.ordersAccepted;
-      if (acceptedOrders != null) {
-        for (Map itemTemp in acceptedOrders) {
-          if (itemTemp['id'] == item?.id) {
-            acceptedOrders.remove(itemTemp);
-            break;
-          }
+      if (listTemp != null && index < listTemp.length) {
+        Orders? item = listTemp[index];
+
+        List<dynamic>? acceptedOrders = GeneralData.currentUser?.ordersAccepted;
+        if (acceptedOrders != null) {
+          // Remove o pedido da lista de pedidos aceitos
+          acceptedOrders.removeWhere((itemTemp) => itemTemp['id'] == item.id);
         }
+
+        // Remove o pedido da lista de pedidos aceitos do usuário atual
+        GeneralData.currentUser?.ordersAccepted
+            ?.removeWhere((itemTemp) => itemTemp['id'] == item.id);
+
+        // Atualiza o status do pedido para false
+        item.helperQueAceitou = '';
+        item.status = false;
+
+        String id = GeneralData.currentUser?.id ?? '';
+
+        FirebaseFirestore db = FirebaseFirestore.instance;
+        await db
+            .collection('Pedidos')
+            .doc(item.id)
+            .update({'status': false, 'helperQueAceitou': ''});
+        await db
+            .collection('Usuários')
+            .doc(id)
+            .update({'pedidosAceitos': acceptedOrders});
+      } else {
+        Failure.showErrorDialog(context, 'Erro ao recusar o pedido');
       }
-
-      GeneralData.currentUser?.ordersAccepted?.remove({
-        'id': item?.id,
-        "titulo": item?.titulo,
-        "descricao": item?.descricao,
-        "autor": item?.autor,
-        'helperQueAceitou': item?.helperQueAceitou,
-        "dataDoChamado": item?.dataDoChamado,
-        "status": true
-      });
-
-      if (listTemp != null) {
-        for (Orders itemTemp in listTemp) {
-          if (itemTemp.id == item?.id) {
-            itemTemp.helperQueAceitou = '';
-            itemTemp.status = false;
-            break;
-          }
-        }
-      }
-
-      String id = GeneralData.currentUser?.id ?? '';
-
-      FirebaseFirestore db = FirebaseFirestore.instance;
-      await db
-          .collection('Pedidos')
-          .doc(item?.id)
-          .update({'status': false, 'helperQueAceitou': ''});
-      await db
-          .collection('Usuários')
-          .doc(id)
-          .update({'pedidosAceitos': acceptedOrders});
     } on FirebaseException catch (e) {
-      Failure.showErrorDialog(context, e);
-    }
-  }
-
-  void updatePage(BuildContext context) async {
-    try {
-      isLoading = true;
-      notifyListeners();
-      final UsersRepository userRepository = UsersRepository();
-      final OrdersRepository ordersRepository = OrdersRepository();
-      Users? user = (await userRepository
-          .getUserByEmail(GeneralData.currentUser?.email ?? ''));
-
-      List<Orders>? listOrders = (await ordersRepository.getAllOrders());
-      GeneralData.currentUser = user;
-      GeneralData.currentorders = listOrders;
-      isLoading = false;
-      notifyListeners();
-    } on FirebaseException catch (e) {
-      isLoading = false;
-      notifyListeners();
       Failure.showErrorDialog(context, e);
     }
   }
@@ -294,7 +265,6 @@ class OrdersController extends ChangeNotifier {
                   color: obj.status ?? false ? Colors.blue : Colors.red))),
       child: ListTile(
         onTap: () {
-          updatePage(context);
           exibirDetalhes(obj, index, context, controller, specific);
         },
         contentPadding: const EdgeInsets.all(15),
@@ -316,5 +286,11 @@ class OrdersController extends ChangeNotifier {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _ordersSubscription?.cancel();
+    super.dispose();
   }
 }

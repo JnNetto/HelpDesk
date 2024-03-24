@@ -8,7 +8,7 @@ import '../../controllers/login_controller.dart';
 import '../../util/AppCollors.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -34,6 +34,7 @@ class _LoginPageState extends State<LoginPage> {
       final String password = emailAndPasswordList[1];
       loginController.emailController.text = email;
       loginController.senhaController.text = password;
+      // ignore: use_build_context_synchronously
       await loginController.efetuaLogin(context: context);
     }
   }

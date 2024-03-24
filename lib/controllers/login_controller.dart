@@ -32,7 +32,8 @@ class LoginController extends ChangeNotifier {
       final OrdersRepository ordersRepository = OrdersRepository();
       Users? user = (await userRepository.getUserByEmail(emailController.text));
 
-      List<Orders>? listOrders = (await ordersRepository.getAllOrders());
+      Stream<List<Orders>>? listOrders =
+          (ordersRepository.getAllOrdersStream());
       if (user != null) {
         GeneralData.currentUser = user;
         GeneralData.currentorders = listOrders;

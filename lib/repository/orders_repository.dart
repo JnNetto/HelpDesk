@@ -8,21 +8,14 @@ import '../model/orders.dart';
 class OrdersRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<List<Orders>?> getAllOrders() async {
-    QuerySnapshot querySnapshot = await _firestore
+  Stream<List<Orders>> getAllOrdersStream() {
+    return _firestore
         .collection("Pedidos")
         .orderBy("dataDoChamado", descending: true)
-        .get();
-
-    if (querySnapshot.docs.isNotEmpty) {
-      List<Orders> listOrders = [];
-      for (var docSnapshot in querySnapshot.docs) {
-        listOrders.add(Orders.fromFirestore(docSnapshot.data()));
-      }
-      return listOrders;
-    } else {
-      return [];
-    }
+        .snapshots()
+        .map((querySnapshot) => querySnapshot.docs
+            .map((doc) => Orders.fromFirestore(doc.data()))
+            .toList());
   }
 
   Future<void> deleteAlredyDeletedOrders(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+
 import 'package:google_fonts/google_fonts.dart';
 import 'package:help_desk/controllers/orders_controller.dart';
 import 'package:help_desk/util/AppCollors.dart';
@@ -98,7 +98,6 @@ class _DetailOrdersState extends State<DetailOrders> {
                   widget.obj.status == false,
               child: TextButton(
                 onPressed: () {
-                  widget.controller.updatePage(context);
                   widget.controller.acceptOrder(context, widget.index);
                   Navigator.pop(context);
                 },

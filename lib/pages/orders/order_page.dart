@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:help_desk/repository/orders_repository.dart';
 import 'package:provider/provider.dart';
 
 import '../../controllers/orders_controller.dart';
@@ -17,7 +18,7 @@ class OrderPage extends StatefulWidget {
 
 class _OrderPageState extends State<OrderPage> {
   String? nome = GeneralData.currentUser?.name;
-  List<Orders>? listOrders = GeneralData.currentorders;
+  OrdersRepository ordersRepository = OrdersRepository();
 
   void exibirModal(context, OrdersController controller) {
     showModalBottomSheet(
@@ -176,7 +177,6 @@ class _OrderPageState extends State<OrderPage> {
                               ),
                               child: IconButton(
                                   onPressed: () {
-                                    ordersController.updatePage(context);
                                     exibirModal(context, ordersController);
                                   },
                                   icon: const Icon(
@@ -241,42 +241,46 @@ class _OrderPageState extends State<OrderPage> {
                                   TextStyle(color: Colors.white, fontSize: 18),
                             ),
                           ),
-                          Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              color: AppCollors.primaryColor,
-                            ),
-                            child: IconButton(
-                                onPressed: () {
-                                  setState(() {
-                                    ordersController.updatePage(context);
-                                  });
-                                },
-                                icon: const Icon(
-                                  Icons.update_rounded,
-                                  color: Colors.white,
-                                )),
-                          ),
                         ],
                       ),
                     ),
                     const SizedBox(
                       height: 20,
                     ),
-                    Expanded(
-                        child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 20),
-                      child: ListView.builder(
-                          itemCount: listOrders?.length,
-                          itemBuilder: (context, index) {
-                            return ordersController.buildOrder(
-                                listOrders![index],
-                                index,
-                                context,
-                                ordersController,
-                                false);
-                          }),
-                    )),
+                    StreamBuilder<List<Orders>>(
+                      stream: ordersRepository.getAllOrdersStream(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        } else if (snapshot.hasError) {
+                          return Center(
+                            child: Text('Error: ${snapshot.error}'),
+                          );
+                        } else {
+                          List<Orders>? orders = snapshot.data;
+                          return Expanded(
+                            child: Container(
+                              margin:
+                                  const EdgeInsets.symmetric(horizontal: 20),
+                              child: ListView.builder(
+                                itemCount: orders?.length ?? 0,
+                                itemBuilder: (context, index) {
+                                  return ordersController.buildOrder(
+                                      orders![index],
+                                      index,
+                                      context,
+                                      ordersController,
+                                      false);
+                                },
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                    ),
                   ],
                 ),
               ),

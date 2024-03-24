@@ -3,5 +3,5 @@ import '../model/users.dart';
 
 class GeneralData {
   static Users? currentUser;
-  static List<Orders>? currentorders;
+  static Stream<List<Orders>>? currentorders;
 }
