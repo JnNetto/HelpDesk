@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:help_desk/controllers/register_controller.dart';
-import 'package:help_desk/pages/historic_orders/historic_orders.dart';
-import 'package:help_desk/pages/specific_orders/specific_orders_page.dart';
+import 'package:help_desk/src/controllers/edit_profile_controller.dart';
+import 'package:help_desk/src/controllers/register_controller.dart';
+import 'package:help_desk/src/pages/historic_orders/historic_orders.dart';
+import 'package:help_desk/src/pages/specific_orders/specific_orders_page.dart';
 import 'package:provider/provider.dart';
-import 'controllers/login_controller.dart';
-import 'controllers/orders_controller.dart';
+import 'src/controllers/login_controller.dart';
+import 'src/controllers/orders_controller.dart';
 import 'firebase_options.dart';
-import 'pages/home/home_page.dart';
-import 'pages/login/login_page.dart';
-import 'pages/orders/order_page.dart';
-import 'pages/registers/register_page.dart';
+import 'src/pages/edit/edit_page.dart';
+import 'src/pages/home/home_page.dart';
+import 'src/pages/login/login_page.dart';
+import 'src/pages/orders/order_page.dart';
+import 'src/pages/registers/register_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,6 +43,10 @@ void main() async {
       '/historicOrders': (BuildContext context) => ChangeNotifierProvider(
             create: (context) => OrdersController(),
             child: const HistoricOrdersPage(),
+          ),
+      '/editProfile': (BuildContext context) => ChangeNotifierProvider(
+            create: (context) => EditProfileController(),
+            child: const EditPage(),
           ),
     },
   ));

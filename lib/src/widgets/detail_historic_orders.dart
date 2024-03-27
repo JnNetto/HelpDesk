@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
-
 import 'package:google_fonts/google_fonts.dart';
-import 'package:help_desk/controllers/orders_controller.dart';
-import 'package:help_desk/util/AppCollors.dart';
-import 'package:help_desk/util/dados_gerais.dart';
+import 'package:help_desk/src/controllers/orders_controller.dart';
+import 'package:help_desk/src/util/AppCollors.dart';
 
 import '../model/orders.dart';
 
-class DetailOrders extends StatefulWidget {
+class DetailHistoricOrders extends StatefulWidget {
   final Orders obj;
   final int index;
   final OrdersController controller;
 
-  const DetailOrders({
+  const DetailHistoricOrders({
     super.key,
     required this.obj,
     required this.index,
@@ -21,10 +19,10 @@ class DetailOrders extends StatefulWidget {
 
   @override
   // ignore: library_private_types_in_public_api
-  _DetailOrdersState createState() => _DetailOrdersState();
+  _DetailHistoricOrdersState createState() => _DetailHistoricOrdersState();
 }
 
-class _DetailOrdersState extends State<DetailOrders> {
+class _DetailHistoricOrdersState extends State<DetailHistoricOrders> {
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -92,25 +90,6 @@ class _DetailOrdersState extends State<DetailOrders> {
               ),
             ],
           ),
-          actions: [
-            Visibility(
-              visible: GeneralData.currentUser?.position == 'helper' &&
-                  widget.obj.status == false,
-              child: TextButton(
-                onPressed: () {
-                  widget.controller.acceptOrder(context, widget.index);
-                  Navigator.pop(context);
-                },
-                child: const Text('Aceitar pedido'),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Voltar'),
-            ),
-          ],
         ),
       ),
     );

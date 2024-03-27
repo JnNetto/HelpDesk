@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../controllers/orders_controller.dart';
 import '../../model/orders.dart';
+import '../../repository/orders_repository.dart';
 import '../../util/AppCollors.dart';
 import '../../util/dados_gerais.dart';
 
@@ -15,15 +16,10 @@ class HistoricOrdersPage extends StatefulWidget {
 }
 
 class _HistoricOrdersPageState extends State<HistoricOrdersPage> {
+  OrdersRepository ordersRepository = OrdersRepository();
   @override
   Widget build(BuildContext context) {
     String? nome = GeneralData.currentUser?.name;
-    Orders order = Orders();
-    List<Orders>? listOrders = order
-        .mapToOrdersList(GeneralData.currentUser?.listOrders)
-        .reversed
-        .toList();
-
     return Consumer<OrdersController>(
         builder: (BuildContext context, OrdersController value, Widget? child) {
       OrdersController ordersController =
@@ -51,8 +47,8 @@ class _HistoricOrdersPageState extends State<HistoricOrdersPage> {
                         ),
                         subtitle: Text(
                           GeneralData.currentUser?.position == 'helper'
-                              ? "Aqui está o histórico de todos os pedidos que você já aceitou $nome!"
-                              : "Aqui está o histtórico de todos os pedidos que você já fez $nome",
+                              ? "Aqui está o histórico dos pedidos que você já aceitou $nome!"
+                              : "Aqui está o histórico de pedidos que você já fez $nome",
                           style: GoogleFonts.poppins(
                               textStyle: TextStyle(
                             fontSize: 15,
@@ -89,12 +85,38 @@ class _HistoricOrdersPageState extends State<HistoricOrdersPage> {
               padding: const EdgeInsets.only(top: 20),
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
-                child: ListView.builder(
-                    itemCount: listOrders.length,
-                    itemBuilder: (context, index) {
-                      return ordersController.buildOrder(listOrders[index],
-                          index, context, ordersController, null);
-                    }),
+                child: StreamBuilder<List<Orders>>(
+                  stream: ordersRepository.getHistoricOrdersStream(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return Center(
+                        child: CircularProgressIndicator(
+                          color: AppCollors.primaryColor,
+                        ),
+                      );
+                    } else if (snapshot.hasError) {
+                      return Center(
+                        child: Text('Error: ${snapshot.error}'),
+                      );
+                    } else {
+                      List<Orders>? listOrders = snapshot.data;
+                      listOrders?.sort((a, b) =>
+                          b.dataDoChamado!.compareTo(a.dataDoChamado!));
+                      return ListView.builder(
+                        itemCount: listOrders?.length ?? 0,
+                        itemBuilder: (context, index) {
+                          return ordersController.buildOrder(
+                            listOrders![index],
+                            index,
+                            context,
+                            ordersController,
+                            true,
+                          );
+                        },
+                      );
+                    }
+                  },
+                ),
               ),
             ),
           ),

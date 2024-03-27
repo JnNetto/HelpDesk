@@ -1,28 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:help_desk/controllers/orders_controller.dart';
-import 'package:help_desk/util/AppCollors.dart';
 
+import 'package:google_fonts/google_fonts.dart';
+import 'package:help_desk/src/controllers/orders_controller.dart';
+import 'package:help_desk/src/util/AppCollors.dart';
+import 'package:help_desk/src/util/dados_gerais.dart';
 import '../model/orders.dart';
 
-class DetailHistoricOrders extends StatefulWidget {
+class DetailSpecificOrders extends StatefulWidget {
   final Orders obj;
   final int index;
   final OrdersController controller;
+  final BuildContext context;
 
-  const DetailHistoricOrders({
+  const DetailSpecificOrders({
     super.key,
     required this.obj,
     required this.index,
     required this.controller,
+    required this.context,
   });
 
   @override
   // ignore: library_private_types_in_public_api
-  _DetailHistoricOrdersState createState() => _DetailHistoricOrdersState();
+  _DetailSpecificOrdersState createState() => _DetailSpecificOrdersState();
 }
 
-class _DetailHistoricOrdersState extends State<DetailHistoricOrders> {
+class _DetailSpecificOrdersState extends State<DetailSpecificOrders> {
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -90,8 +93,63 @@ class _DetailHistoricOrdersState extends State<DetailHistoricOrders> {
               ),
             ],
           ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                showDeleteConfirmationDialog(
+                    context, widget.controller, widget.index);
+              },
+              child: Text(
+                GeneralData.currentUser?.position == 'helper'
+                    ? 'Cancelar ajuda'
+                    : 'Retirar pedido',
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Voltar'),
+            ),
+          ],
         ),
       ),
     );
   }
+}
+
+void showDeleteConfirmationDialog(
+    BuildContext context, OrdersController controller, int index) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Confirmar Exclusão'),
+        content: const Text('Tem certeza que deseja apagar este pedido?'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+            },
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () {
+              if (GeneralData.currentUser?.position == 'helper') {
+                controller.disacceptOrder(context, index);
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+              } else {
+                controller.deleteSpecificOrder(index, context);
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+              }
+            },
+            child: const Text('Confirmar'),
+          ),
+        ],
+      );
+    },
+  );
 }

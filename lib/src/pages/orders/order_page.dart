@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:help_desk/repository/orders_repository.dart';
+import 'package:help_desk/src/repository/orders_repository.dart';
 import 'package:provider/provider.dart';
 
 import '../../controllers/orders_controller.dart';
@@ -252,8 +252,10 @@ class _OrderPageState extends State<OrderPage> {
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
+                          return Center(
+                            child: CircularProgressIndicator(
+                              color: AppCollors.primaryColor,
+                            ),
                           );
                         } else if (snapshot.hasError) {
                           return Center(

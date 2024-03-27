@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -11,7 +9,7 @@ import '../../util/AppCollors.dart';
 import '../../util/dados_gerais.dart';
 
 class SpecificOrdersPage extends StatefulWidget {
-  const SpecificOrdersPage({Key? key}) : super(key: key);
+  const SpecificOrdersPage({super.key});
 
   @override
   State<SpecificOrdersPage> createState() => _SpecificOrdersPageState();
@@ -88,11 +86,13 @@ class _SpecificOrdersPageState extends State<SpecificOrdersPage> {
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
                 child: StreamBuilder<List<Orders>>(
-                  stream: ordersRepository.getAllOrdersStream(),
+                  stream: ordersRepository.getSpecificOrdersStream(),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
+                      return Center(
+                        child: CircularProgressIndicator(
+                          color: AppCollors.primaryColor,
+                        ),
                       );
                     } else if (snapshot.hasError) {
                       return Center(
@@ -100,6 +100,8 @@ class _SpecificOrdersPageState extends State<SpecificOrdersPage> {
                       );
                     } else {
                       List<Orders>? listOrders = snapshot.data;
+                      listOrders?.sort((a, b) =>
+                          b.dataDoChamado!.compareTo(a.dataDoChamado!));
                       return ListView.builder(
                         itemCount: listOrders?.length ?? 0,
                         itemBuilder: (context, index) {

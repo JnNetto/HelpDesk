@@ -5,7 +5,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:help_desk/exceptions/failure.dart';
+import 'package:help_desk/src/exceptions/failure.dart';
 
 import '../model/new_orders.dart';
 import '../model/orders.dart';
